@@ -1,6 +1,0 @@
-#!/bin/bash
-HERE="$(dirname "$(readlink -f "${0}")")"
-"${HERE}/usr/bin/mpv-tweak-2.sh" "$@"
-
-
-
