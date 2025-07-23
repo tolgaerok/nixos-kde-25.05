@@ -1,7 +1,8 @@
-# nixos-kde-25.05
-### My personal NixOs 25.05 config
+
 
 # NixOS 25.05 KDE NVIDIA
+### My personal NixOs 25.05 config
+#
 
 ```bash
 # Tolga Erok
