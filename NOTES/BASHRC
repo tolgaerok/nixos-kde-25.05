@@ -246,3 +246,4 @@ alias optus="nmcli connection add type wifi \
 clear && echo && fortune | sed "s/^/    /" | lolcat && echo
 
 alias gitup="$HOME/gitup2.sh"
+...
