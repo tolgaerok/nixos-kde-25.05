@@ -1,3 +1,6 @@
 samba/mnt/qnap-secrets
 samba/mnt/router-secrets
 NOTES/
+nvidia/z_NOTES.txt
+nvidia/z_MASTER_BAKUP.nix
+my-scripts
