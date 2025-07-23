@@ -3,7 +3,7 @@
 with lib;
 let
   username = builtins.getEnv "USER";
-  name = "tolga";  # Define the user name
+  name = "tolga"; # Define the user name
 
   createUserXauthority = lib.mkForce ''
     if [ ! -f "/home/${name}/.Xauthority" ]; then
@@ -12,8 +12,7 @@ let
       chmod 600 /home/${name}/.Xauthority
     fi
   '';
-in
-{
+in {
   #---------------------------------------------------------------------
   # Custom activationScripts
   #---------------------------------------------------------------------
@@ -33,5 +32,5 @@ in
         chown ${name}:${name} /home/${name}/$dir
       done
     '';
-    };
+  };
 }

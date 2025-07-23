@@ -83,7 +83,7 @@ printf "\e[33mFlathub Repo Status:   \e[0m%b\n" " $FLATHUB_LOADED"
 
 # ────────── FILESYSTEM OVERVIEW ──────────
 # echo -e "\n\e[33mFilesystem Overview:\e[0m"
-# duf 
+# duf
 
 # ────────── UDEV RULES ──────────
 echo -e "\n\e[33m────────── Reloading udev rules ──────────\e[0m"

@@ -6,3 +6,7 @@ nvidia/z_MASTER_BAKUP.nix
 my-scripts/
 python/fhs.nix
 fonts/default copy.nix
+fonts/OVERLAY_ISSUES.txt
+networking/networkmanager.nix
+python/shell-.nix
+vm/original - default.nix
