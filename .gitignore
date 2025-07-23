@@ -2,3 +2,4 @@ NOTES/
 samba/mnt/
 nvidia/z_*
 my-scripts/
+python/fhs.nix
