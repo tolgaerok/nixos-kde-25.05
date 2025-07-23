@@ -62,3 +62,32 @@ sudo nix-channel --update nixpkgs # If using plain Nix
 nixos-rebuild switch --upgrade # If on NixOS
 
 sudo /etc/nm-resume-repair
+
+{ config, pkgs, lib, ... }:
+# Tolga Erok 
+
+let
+  username = "tolga";
+  homeDir = "/home/${username}";
+in {
+  # Define the user (you probably already have this)
+  users.users.${username} = {
+    isNormalUser = true;
+    home = homeDir;
+    extraGroups = [ "wheel" "networkmanager" "video" "audio" "lp" "scanner" ];
+    shell = pkgs.bash;
+  };
+
+  # Create personal directories at rebuild time
+  system.activationScripts.createUserDirs.text = ''
+    set -e
+    if id ${username} >/dev/null 2>&1; then
+      for dir in MUM DAD WORK SNU Documents Downloads Music Pictures Videos MyGit DLNA Applications Universal .icons .ssh; do
+        install -d -m 755 -o ${username} -g ${username} ${homeDir}/$dir
+      done
+    else
+      echo "⚠️ User '${username}' not found. Skipping home directory creation."
+    fi
+  '';
+}
+
