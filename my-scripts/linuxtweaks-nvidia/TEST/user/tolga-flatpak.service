@@ -1,0 +1,22 @@
+[Unit]
+Description=Tolga's Flatpak Automatic Update and Notification VER: 5.0
+Documentation=file:///home/tolga/.config/systemd/user/help.txt
+OnFailure=tolga-flatpak-failed-notify.service
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecCondition=/bin/bash -c '[[ "4" == @(2|4) ]]'
+ExecStart=/bin/bash -c '/usr/bin/notify-send "" "🌐  Checking for flatpak cruft" --app-name="🔧  Flatpak Maintenance" -i /usr/local/bin/LinuxTweaks/images/LinuxTweak.png -u NORMAL && /usr/bin/flatpak --system uninstall --unused -y --noninteractive && sleep 5 && /usr/bin/notify-send "" "📡  Checking for flatpak UPDATES" --app-name="📡  Flatpak Updater" -i /usr/local/bin/LinuxTweaks/images/LinuxTweak.png -u NORMAL && /usr/bin/flatpak --system update -y --noninteractive && sleep 5 && /usr/bin/notify-send "" "💻  Checking and repairing Flatpaks" --app-name="🔧  Flatpak Repair Service" -i /usr/local/bin/LinuxTweaks/images/LinuxTweak.png -u NORMAL && /usr/bin/flatpak --system repair && sleep 5 && /usr/bin/notify-send "Flatpaks checked, fixed and updated" "✅  Your computer is ready!" --app-name="💻  Flatpak Update Service" -i /usr/local/bin/LinuxTweaks/images/LinuxTweak.png -u NORMAL'
+
+
+Environment=SYSTEMD_SLEEP_FREEZE_USER_SESSIONS=0
+
+# Watchdog & safety
+TimeoutStartSec=15min
+TimeoutStopSec=30s
+TimeoutStopFailureMode=kill
+
+[Install]
+WantedBy=default.target

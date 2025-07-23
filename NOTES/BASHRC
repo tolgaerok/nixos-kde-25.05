@@ -1,0 +1,246 @@
+alias exe='echo "🔍 Scanning for script files in: $(pwd)" && \
+find . -type f \( -name "*.sh" -o -name "*.bash" -o -name "*.service" -o -name "*.timer" -o -name "*.conf" -o -name "*.nix" -o -name "*.txt" \) -print0 | \
+while IFS= read -r -d "" file; do
+  echo "⚙️  Making executable: $file"
+  chmod +x "$file"
+done'
+
+
+
+
+#--- YAD Helper Function ---#
+fancy() {
+  yad --center --width=400 --height=120 --window-icon=dialog-information --borders=10 \
+    --title="LinuxTweaks NVIDIA Installer" --text="$1" --button=gtk-ok:0 --no-buttons &
+  YAD_PID=$!
+  bash -c "$2"
+  kill $YAD_PID
+}
+
+# --- Service Status Check ---
+status() {
+  echo -e "\n\033[1;36m🔍 Checking NVIDIA-related systemd services...\033[0m\n"
+  printf "%-30s %-15s %-20s\n" "Service" "Enabled" "Active State"
+  printf "%-30s %-15s %-20s\n" "-------" "-------" "-------------"
+
+  for service in nvidia-persistenced nvidia-suspend nvidia-resume nvidia-hibernate; do
+    # Enabled check
+    if systemctl is-enabled --quiet "$service"; then
+      enabled="\033[1;32menabled 🟢\033[0m"
+    else
+      enabled="\033[1;33mdisabled 🟡\033[0m"
+    fi
+
+    # check with oneshot
+    if systemctl is-active --quiet "$service"; then
+      active="\033[1;32mactive 🟢\033[0m"
+    else
+      type=$(systemctl show -p Type --value "$service")
+      if [[ "$type" == "oneshot" ]]; then
+        active="\033[1;34moneshot (idle) 📌\033[0m"
+      else
+        active="\033[1;31minactive ❌\033[0m"
+      fi
+    fi
+
+    # result
+    printf "%-30s %-15b %-20b\n" "$service" "$enabled" "$active"
+  done
+
+  echo -e "\n\033[0;36m📌 Note for myself: 'oneshot (idle)' means the service runs only during suspend/resume/hibernate events....\033[0m\n"
+}
+
+status2() {
+  echo -e "\n\033[1;36m🔍 Checking NVIDIA-related systemd services...\033[0m\n"
+  printf "%-30s %-2s %1s\n" "Service" "Enabled" "Active State"
+  printf "%-30s %-2s %1s\n" "-------" "-------" "-------------"
+
+  for service in nvidia-persistenced nvidia-suspend nvidia-resume nvidia-hibernate; do
+    if systemctl is-enabled --quiet "$service"; then
+      enabled="\033[1;32menabled 🟢\033[0m"
+    else
+      enabled="\033[1;33mdisabled 🟡\033[0m"
+    fi
+
+    if systemctl is-active --quiet "$service"; then
+      # Blinking green dot
+      active="\033[5;32mactive 🟢\033[0m"
+    else
+      type=$(systemctl show -p Type --value "$service")
+      if [[ "$type" == "oneshot" ]]; then
+        active="\033[1;34moneshot (idle) 📌\033[0m"
+      else
+        active="\033[1;31minactive ❌\033[0m"
+      fi
+    fi
+
+    printf "%-30s %-20b %-25b\n" "$service" "$enabled" "$active"
+  done
+
+  echo -e "\n\033[1;36m🔧 System Info:\033[0m"
+  printf "%-30s %-20s %-25s" "----------------" "------------------------"
+
+  # GPU Model
+  if command -v nvidia-smi &>/dev/null; then
+    gpu_model=$(nvidia-smi --query-gpu=name --format=csv,noheader | head -n1)
+  else
+    gpu_model=$(lspci | grep -i vga | grep -i nvidia | sed 's/.*VGA compatible controller: //' | cut -d'[' -f1)
+  fi
+
+  # Driver Type
+  if modinfo nvidia &>/dev/null; then
+    driver_type="proprietary"
+  elif modinfo nouveau &>/dev/null; then
+    driver_type="open (nouveau)"
+  else
+    driver_type="unknown"
+  fi
+
+  # Kernel and DE
+  kernel_ver=$(uname -r)
+  de=$(loginctl show-session $(loginctl | grep $(whoami) | awk '{print $1}') -p Desktop | cut -d= -f2)
+  [[ -z "$de" ]] && de="unknown"
+
+  # Output
+  printf "\n%-30s %s\n" "GPU Model:"     "$gpu_model"
+  printf "%-30s %s\n" "Driver Type:"     "$driver_type"
+  printf "%-30s %s\n" "Kernel Version:"  "$kernel_ver"
+  printf "%-30s %s\n" "Desktop Env:"     "$de"
+
+  echo -e "\n\033[0;36m📌 Note: 'oneshot (idle)' means the service triggers during suspend/resume only.\033[0m\n"
+}
+
+
+
+
+
+YELLOW="\033[1;33m"
+BLUE="\033[0;34m"
+RED="\033[0;31m"
+NC="\033[0m"
+
+
+
+check2() {
+    # Colors
+    RED='\033[0;31m'
+    YELLOW='\033[1;33m'
+    BLUE='\033[0;34m'
+    NC='\033[0m' # No Color
+
+    # Find active network interface (prioritizing wireless or ethernet)
+    interface=$(ip -o link show | awk -F': ' '$2 ~ /^(wlp|wlo|wlx|eth|eno)/ && $0 ~ /state UP/ && $0 !~ /NO-CARRIER/ {print $2; exit}')
+
+    if [[ -z "$interface" ]]; then
+        echo -e "${RED}Error: No active network interface detected!${NC}"
+        return 1
+    fi
+
+    echo -e "${BLUE}Restarting CAKE qdisc for interface: ${YELLOW}$interface${NC}"
+
+    echo -e "${BLUE}Verifying qdisc configuration for ${YELLOW}$interface${NC}"
+    sudo tc -s qdisc show dev "$interface"
+
+    echo -e "${BLUE}Systemd service statuses:${NC}"
+    echo -e "${YELLOW}\n ─── Timers ───────────────────────────────────────────────────${NC}"
+
+    # Check linuxtweaks-flatpak.timer (user)
+    timer_line=$(systemctl --user list-timers --no-pager --all | grep linuxtweaks-flatpak.timer || true)
+    if [[ -n "$timer_line" ]]; then
+        read -r _ next_date next_time _ next_in _ timer_name triggered_service <<< "$timer_line"
+
+        echo -e "${BLUE}  ⏰ Timer:${NC} ${YELLOW}$timer_name (user)${NC}"
+        echo -e "${BLUE}  ⏳ Next run:${NC} $next_date $next_time ( ${YELLOW}$next_in${NC} left )"
+        echo -e "${BLUE}  🔧 Triggers service:${NC} ${YELLOW}$triggered_service${NC}"
+    else
+        echo -e "${RED}  ⚠️ No linuxtweaks-flatpak.timer (user) found.${NC}"
+    fi
+
+    echo -e "${YELLOW}───────────────────────────────────────────────────────────────${NC}\n"
+
+    # Services and timers to check
+    # Format: name:scope (scope = user or system)
+    declare -A units=(
+        [linuxTweaks-autostart.service]="system"
+        [linuxtweaks-cake-resume.service]="system"
+        [linuxtweaks-cake.service]="system"
+        [linuxtweaks-flatpak.service]="user"
+        [linuxtweaks-flatpak.timer]="user"
+        [my-preload.service]="system"
+        [ntp-check.service]="system"
+        [ntp-check.timer]="system"
+        [ntp-check-timer-restart.service]="system"
+        [preload.service]="system"
+        [wsdd-sleep.service]="system"
+        [wsdd-starter.service]="system"
+        [wsdd.service]="system"
+    )
+
+    for service in "${!units[@]}"; do
+        scope="${units[$service]}"
+        echo -e "${BLUE}Status of ${YELLOW}${service}${NC} (${scope} level)"
+        echo -e "${YELLOW}───────────────────────────────────────────────────────────────${NC}"
+
+        if [[ "$scope" == "user" ]]; then
+            systemctl --user status "$service" --no-pager
+        else
+            sudo systemctl status "$service" --no-pager
+        fi
+        echo ""
+    done
+}
+
+# Created by `pipx` on 2025-06-27 02:13:53
+export PATH="$PATH:/home/tolga/.local/bin"
+export PATH=$HOME/.npm-global/bin:$PATH
+
+#   alias scloud='cd Music/SOUNDCLOUD && f() { scdl -l "https://soundcloud.com/$1"; }; f'
+alias scloud='cd ~/Music/SOUNDCLOUD && /etc/nixos/my-scripts/linuxtweaks-soundcloud/linuxtweaks-sound-cloud-2.sh'
+
+alias qnap="ssh admin@192.168.0.17"
+
+# PS1="\[\e[1;m\]┌(\[\e[1;32m\]\u\[\e[1;34m\]@\h\[\e[1;m\]) \[\e[1;m\]➤\[\e[1;36m\] \W \[\e[1;m\] \n\[\e[1;m\]└\[\e[1;33m\]➤\[\e[0;m\]  "
+
+PS1="\[\e[1;m\]┌(\[\e[1;32m\]\u\[\e[1;34m\]@\h\[\e[1;m\]) \[\e[1;m\]➤\[\e[1;36m\] \W \[\e[1;m\] \n\[\e[1;m\]└\[\e[1;33m\]\[\e[5m\]➤\[\e[0m\]  "
+
+
+# eval "$(direnv hook bash)"
+
+# 🐢 Lazy-load direnv only once, avoid slow startups
+#_direnv_lazy_hook() {
+#  unset -f _direnv_lazy_hook
+#  eval "$(direnv hook bash)"
+#  _direnv_hook "$@"
+#}
+# PROMPT_COMMAND='_direnv_lazy_hook'
+export PATH=$HOME/.nix-profile/bin:$PATH
+eval "$(direnv hook bash)"
+
+use_nix() {
+  source "${HOME}/.nix-profile/share/nix-direnv/direnvrc"
+  use nix
+}
+alias py='cd $HOME && echo -e "\e[34m📦 Please wait, loading → nix-shell...\e[0m" && nix-shell'
+alias dev='echo -e "\e[34m📦 Please wait, loading → nix development...\e[0m" && cd dev/test-nix-direnv/'
+
+
+alias mybackup='echo -e "\e[34m📦 Backing up /etc/nixos → MEGA folder...\e[0m"; sudo rsync -a --delete /etc/nixos/ ~/Documents/MEGA/Documents/LINUX/NixOS/GTX1650/ && echo -e "\e[32m✅ Backup complete — like clockwork.\e[0m" || echo -e "\e[31m❌ Backup failed — something’s off, brother.\e[0m"'
+
+alias ff='NIXOS_FETCH_LOGO=$(find $HOME/.config/fastfetch/logo/* | /usr/bin/shuf -n 1) && /usr/bin/fastfetch --logo $NIXOS_FETCH_LOGO -c $HOME/.config/fastfetch/config.jsonc'
+
+alias nwr="sudo /etc/nm-resume-repair"
+
+alias kplasma="/bin/pkill -9 plasmashell"
+
+alias optus="nmcli connection add type wifi \
+  ifname wlp3s0 \
+  con-name 'OPTUS_DADS_5GHz' \
+  ssid 'OPTUS_DADS_5GHz' \
+  wifi-sec.key-mgmt wpa-psk \
+  wifi-sec.psk 'izardleary84422' \
+  ipv4.method auto \
+  ipv6.method auto && \
+  nmcli connection up 'OPTUS_DADS_5GHz' && \
+  sudo /etc/nm-resume-repair"
+
+clear && echo && fortune | sed "s/^/    /" | lolcat && echo

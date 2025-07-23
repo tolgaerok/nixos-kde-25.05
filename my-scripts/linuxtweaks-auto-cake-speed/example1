@@ -1,0 +1,92 @@
+#!/bin/bash
+sudo dnf install speedtest-cli
+
+# Fetch the speedtest results
+download_speed=$(speedtest-cli --simple | grep "Download" | awk '{print $2}' | sed 's/Mbit\/s//')
+upload_speed=$(speedtest-cli --simple | grep "Upload" | awk '{print $2}' | sed 's/Mbit\/s//')
+ping_latency=$(speedtest-cli --simple | grep "Ping" | awk '{print $2}' | sed 's/ms//')
+
+# Apply a 5% buffer for safety
+optimal_download=$(echo "$download_speed * 0.95" | bc)
+optimal_upload=$(echo "$upload_speed * 0.95" | bc)
+
+# Show current test results
+echo "Current Speedtest Results:"
+echo "Download Speed: $download_speed Mbit/s"
+echo "Upload Speed: $upload_speed Mbit/s"
+echo "Ping Latency: $ping_latency ms"
+
+# Apply the CAKE qdisc settings to the interface (eno1)
+echo "Reapplying CAKE settings with optimal values..."
+sudo tc qdisc replace dev eno1 root cake bandwidth ${optimal_download}Mbit diffserv4 triple-isolate nat nowash ack-filter split-gso rtt ${ping_latency}ms overhead 44
+
+# Verify the settings have been applied
+echo "CAKE settings applied:"
+sudo tc qdisc show dev eno1
+
+
+#!/bin/bash
+sudo dnf install speedtest-cli
+
+# Function to retrieve speeds and ping from speedtest-cli
+get_speedtest_results() {
+    # Run speedtest-cli and capture the results
+    result=$(speedtest-cli --simple)
+
+    # Extract download, upload, and ping values
+    download_speed=$(echo "$result" | grep "Download" | awk '{print $2}' | sed 's/Mbit\/s//')
+    upload_speed=$(echo "$result" | grep "Upload" | awk '{print $2}' | sed 's/Mbit\/s//')
+    ping_latency=$(echo "$result" | grep "Ping" | awk '{print $2}' | sed 's/ms//')
+
+    # Display results
+    echo "Speedtest Results:"
+    echo "Download Speed: $download_speed Mbit/s"
+    echo "Upload Speed: $upload_speed Mbit/s"
+    echo "Ping Latency: $ping_latency ms"
+}
+
+# Step 1: Get the results from speedtest-cli
+get_speedtest_results
+
+# Step 2: Calculate optimal CAKE bandwidth settings
+# Apply a 5-10% buffer under the maximum values to avoid overloading the connection
+optimal_download=$(echo "$download_speed * 0.95" | bc)
+optimal_upload=$(echo "$upload_speed * 0.95" | bc)
+
+# Step 3: Check if CAKE is available in the kernel
+if ! modinfo sch_cake &> /dev/null; then
+    echo "Error: CAKE is not available in your kernel. Please install a compatible kernel."
+    exit 1
+fi
+
+# Step 4: Find the correct network interface name
+interface=$(ip link | grep -o '^[0-9]*: \([^:]*\)' | awk '{print $2}' | grep -E 'eth|wlp|enp' | head -n 1)
+
+if [ -z "$interface" ]; then
+    echo "Error: No suitable network interface found. Please check your system configuration."
+    exit 1
+fi
+
+echo "Using interface: $interface"
+
+# Step 5: Apply CAKE configuration for download
+echo "Applying optimal CAKE settings based on your speedtest results..."
+# sudo tc qdisc replace dev $interface root cake bandwidth ${optimal_download}Mbit diffserv4 triple-isolate nat nowash ack-filter split-gso rtt ${ping_latency}ms overhead 44
+
+# Apply the CAKE configuration for upload
+# sudo tc qdisc replace dev $interface parent 1:1 handle 10: cake bandwidth ${optimal_upload}Mbit diffserv4 triple-isolate nat nowash ack-filter split-gso rtt ${ping_latency}ms overhead 44
+
+# Confirm application
+echo "CAKE settings applied:"
+echo "Download: ${optimal_download} Mbps"
+echo "Upload: ${optimal_upload} Mbps"
+echo "Ping Latency: ${ping_latency} ms"
+
+
+
+
+🧼 To reset everything cleanly:
+
+sudo tc qdisc del dev eno1 root
+sudo tc qdisc del dev eno1 ingress
+sudo tc qdisc del dev ifb0 root

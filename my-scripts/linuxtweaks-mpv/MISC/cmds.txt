@@ -1,0 +1,7 @@
+./MPV_Tweak_2-x86_64.AppImage --appimage-extract
+cd squashfs-root/usr/bin
+chmod +x mpv-tweak-2.sh
+cd ../../..
+ARCH=x86_64 ./appimagetool-x86_64.AppImage squashfs-root MPV_Tweak_2-x86_64.AppImage
+chmod +x MPV_Tweak_2-x86_64.AppImage
+./MPV_Tweak_2-x86_64.AppImage

@@ -1,0 +1,19 @@
+[Desktop Entry]
+Comment[en_AU]=Sync with MEGA cloud
+Comment=Sync with MEGA cloud
+Exec=bash -c 'xhost +SI:localuser:tolga && /home/tolga/start_megasync.sh'
+GenericName[en_AU]=
+GenericName=
+Icon=mega
+MimeType=
+Name[en_AU]=MEGAsync
+Name=MEGAsync
+Path=
+StartupNotify=false
+Terminal=false
+TerminalOptions=
+Type=Application
+Version=1.0
+X-GNOME-Autostart-Delay=1
+X-KDE-SubstituteUID=false
+X-KDE-Username=

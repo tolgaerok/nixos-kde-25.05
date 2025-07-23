@@ -1,0 +1,9 @@
+[Unit]
+Description=Periodic preload of apps
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=4h
+
+[Install]
+WantedBy=timers.target

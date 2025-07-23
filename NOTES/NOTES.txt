@@ -1,0 +1,266 @@
+ # ----------------------------------------------- #
+  # For defrag
+  # ----------------------------------------------- #
+  defrag sudo e4defrag -v /
+  sudo e4defrag -v /home/tolga
+
+  # findmnt /
+  sudo tune2fs -m 1 /dev/nvme0n1p2
+  sudo tune2fs -l /dev/nvme0n1p2 | grep 'Reserved block count'
+  sudo tune2fs -l /dev/nvme0n1p2 | grep 'Block count'
+
+   fileSystems."/mnt/Router" = {
+    device = "//192.168.0.1/tolga";
+    fsType = "cifs";
+    options = [
+      "credentials=/etc/nixos/samba/mnt/router-secrets"
+      "gid=100"
+      "noauto"
+      "nofail"
+      "rw"
+      "sec=ntlmssp"
+      "uid=1000"
+      "vers=1.0"
+      "x-systemd.automount"
+      "x-systemd.device-timeout=5s"
+      "x-systemd.idle-timeout=60"
+      "x-systemd.mount-timeout=5s"
+      "x-systemd.requires=network-online.target"
+    ];
+  };
+
+
+  for v in 3.0 2.1 2.0 1.0; do
+  echo "Trying vers=$v..."
+  sudo mount -t cifs //192.168.0.1/tolga /mnt/Router \
+    -o credentials=/etc/nixos/samba/mnt/router-secrets,vers=$v && \
+    echo "✅ Mounted successfully with vers=$v" && \
+    sudo umount /mnt/Router && \
+    break
+done
+
+#!/usr/bin/env bash
+# Tolga Erok
+# Personal flatpak installer VERSION: 2
+
+# ─── BETA: Install Flatpaks for Debian, NixOS, Fedora, and Arch ─────────────────────────────────────
+set -euo pipefail
+# my default file for the list of Flatpaks to install
+my_nixos_flatpak_file="${TARGET_FLATPAK_FILE:-/etc/nixos/flatpaks/system-flatpaks.list}"
+
+# is flatpak installed, install if not
+if ! command -v flatpak &>/dev/null; then
+    echo "Flatpak not found. Attempting to install Flatpak..."
+    
+    # which package manager and install flatpak
+    if command -v dnf5 &>/dev/null || command -v dnf &>/dev/null; then
+        sudo dnf install -y flatpak || { echo "Failed to install flatpak on Fedora. Exiting."; exit 1; }
+    elif command -v pacman &>/dev/null; then
+        sudo pacman -Sy --noconfirm flatpak || { echo "Failed to install flatpak on Arch. Exiting."; exit 1; }
+    elif command -v apt &>/dev/null; then
+        sudo apt update && sudo apt install -y flatpak || { echo "Failed to install flatpak on Debian. Exiting."; exit 1; }
+    elif command -v nix-env &>/dev/null; then
+        nix-env -iA nixpkgs.flatpak || { echo "Failed to install flatpak on NixOS. Exiting."; exit 1; }
+    else
+        echo "Unsupported distribution. Please install Flatpak manually."
+        exit 1
+    fi
+fi
+
+# Add Flathub remote if not already added
+flatpak remote-add --if-not-exists --system flathub https://flathub.org/repo/flathub.flatpakrepo
+
+# Check if my Flatpak file exists and is not empty: /etc/nixos/flatpaks/system-flatpaks.list
+if [[ -s "$my_nixos_flatpak_file" ]]; then
+    echo "Installing/Updating Flatpaks from $my_nixos_flatpak_file..."
+
+    # Install or update Flatpaks listed in my file
+    xargs -a "$my_nixos_flatpak_file" flatpak install --system -y --or-update
+else
+    echo "No Flatpaks to install. The file is missing or empty: $my_nixos_flatpak_file"
+    
+fi
+
+
+  # ----------------------------------------------- #
+  # Mount my TEMU_USB case and ramp up to max speed
+  # ----------------------------------------------- #
+  # lsblk -f    blkid /dev/sdc1    dd if=/dev/zero of=/mnt/TEMU_STICK/testfile bs=1M count=5000 status=progress
+  # sync 
+  # echo 3 > /proc/sys/vm/drop_caches
+  fileSystems."/mnt/TEMU_STICK" = {
+    device = "/dev/disk/by-uuid/3b23d4a5-b33f-4782-a8f8-721a820ee7b4";
+    fsType = "ext4";
+    options = [
+      "async"
+      "barrier=0"
+      "data=writeback"
+      "nofail"
+      "rw"
+      "x-systemd.device-timeout=5s"
+      "x-systemd.mount-timeout=5s"
+      # "noauto"
+    ];
+  };
+
+  # systemd.network.wait-online.enable = true;
+
+systemctl status mnt-TEMU_STICK.mount
+systemctl status mnt-Relationships.mount
+systemctl status mnt-Relationships.automount
+systemctl status mnt-QNAP_Public.mount
+systemctl status mnt-QNAP_Public.automount
+systemctl list-units | grep mnt
+
+sudo systemctl reset-failed
+sudo systemctl daemon-reload
+sudo systemctl reset-failed
+
+
+###### TEMU MNT
+fileSystems."/mnt/TEMU_STICK" = {
+  device = "/dev/disk/by-uuid/3b23d4a5-b33f-4782-a8f8-721a820ee7b4";
+  fsType = "ext4";
+  options = [
+    "async"
+    "barrier=0"
+    "data=writeback"
+    "nofail"
+    "rw"
+    "x-systemd.device-timeout=5s"
+    "x-systemd.mount-timeout=5s"
+  ];
+};
+
+systemctl status mnt-TEMU_STICK.mount
+
+
+
+#!/usr/bin/env bash
+# Tolga Erok
+# Personal flatpak installer VERSION: 2
+
+set -euo pipefail
+
+# my default file for the list of Flatpaks to install
+my_nixos_flatpak_file="${TARGET_FLATPAK_FILE:-/etc/nixos/flatpaks/system-flatpaks.list}"
+
+echo "─────────────── LINUXTWEAKS FLATPAK INSTALLER ───────────────"
+
+# Check if flatpak is installed
+if ! command -v flatpak &>/dev/null; then
+    echo "Flatpak not found. Installing..."
+
+    if command -v dnf5 &>/dev/null || command -v dnf &>/dev/null; then
+        sudo dnf install -y flatpak
+    elif command -v pacman &>/dev/null; then
+        sudo pacman -Sy --noconfirm flatpak
+    elif command -v apt &>/dev/null; then
+        sudo apt update && sudo apt install -y flatpak
+    elif command -v nix-env &>/dev/null; then
+        nix-env -iA nixpkgs.flatpak
+    else
+        echo "Unsupported distro. Install flatpak manually."
+        exit 1
+    fi
+fi
+
+# Add Flathub remote if missing
+flatpak remote-add --if-not-exists --system flathub https://flathub.org/repo/flathub.flatpakrepo
+
+# Process the Flatpak list
+if [[ -s "$my_nixos_flatpak_file" ]]; then
+    echo "Installing/Updating Flatpaks from $my_nixos_flatpak_file..."
+
+    while IFS= read -r app || [[ -n "$app" ]]; do
+        [[ -z "$app" || "$app" =~ ^# ]] && continue
+
+        echo "→ Installing or updating: $app"
+
+        # Try installing specific ref first to avoid prompts
+        if [[ "$app" == *"/"* ]]; then
+            flatpak install --system --noninteractive --or-update -y "$app" || \
+                echo "⚠️ Failed to install $app"
+        else
+            # Try generic ID if no branch is given
+            flatpak install --system --noninteractive --or-update -y "$app" || \
+                echo "⚠️ Failed to install $app"
+        fi
+
+    done <"$my_nixos_flatpak_file"
+else
+    echo "No Flatpaks to install. File missing or empty: $my_nixos_flatpak_file"
+fi
+
+# VSCode Extensions
+if command -v code &>/dev/null; then
+    echo "Installing VSCode extensions..."
+    extensions=(
+        ms-azuretools.vscode-containers
+        ms-vscode-remote.remote-containers
+        ms-vscode-remote.remote-ssh
+    )
+    for ext in "${extensions[@]}"; do
+        echo "→ Installing: $ext"
+        code --install-extension "$ext" --force || \
+            echo "⚠️ Failed to install $ext"
+    done
+else
+    echo "VSCode not found. Skipping extension installation."
+fi
+
+echo "─────────────── INSTALLATION COMPLETE ───────────────"
+
+########## RESET MNT SSH QNAP
+systemctl daemon-reload
+systemctl restart mnt-SSH_QNAP.mount
+systemctl status mnt-SSH_QNAP.mount
+
+
+########## QNAP 
+mkdir -p /root/.ssh
+chmod 700 /root/.ssh
+echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCcIa1/IET3oLuu8nSZ6V1T7TKVe4cxIyZACd4U+q/F/NzJ3dUXELjgIxLC3QD6q5ISmTo0Z9shovSbRAPj/7VG92C1V18BDa4qq5DBMHuaDGOdpA4ah9RwQTs7CCLty54gUMRulZYofkmUN32O3GtmdwYzKbxL3AcxVoZuU2vBxjeBRxn8Rb6+zLqWoixRukdutVm6bDakv5QNGEYNnPYEDWMuNgVbhodf/btthplPsf/J9g7UYKDd4FhLsmuuCdYPukzscSqZbY18dd/hyn/bIlWGL6eIx65/u/rLx8o/D66i1hJBy/QBuk3tZxCqpXhdXOXgPhWkuSixV8q5zdBASH/cIUccVi7UFBmkHtG2FbBHCgtVL4IZsBkgjL7TjKN3P6hmlLVwiRJOn0JJffPmeGGXkP9u3CfF4m3MxinIk3MmHT6pcDspMEa06N8dR92tmwA3KPfBDy/ZmWNvO8xU823vz4v8Gb7SYn3MCVSfnb0mUiiecQTFH1aOTbABn2+HkcPDCxjmhFlAkYqK7bY4XRnKpj3z6VrLAwP90ykHiLLQHCkn/8cYVyQyAoihgLIFOVdo/FL/RepIZszaG0rfUKw6r5qr1Y1PJNmDHGdTclXUpUYzSxbgNPUjuIXol+U7F6DqUc/ucTt6yRtEVcpNJxvfKKPxXw4yL4uWKd/uoQ== tolga@G4800-NIXOS' >> /root/.ssh/authorized_keys
+chmod 600 /root/.ssh/authorized_keys
+
+########### RESET PLASMA DESKTOP
+mv ~/.config/plasma-org.kde.plasma.desktop-appletsrc ~/.config/plasma-org.kde.plasma.desktop-appletsrc.backup
+alias kplasma="pkill -9 plasmashell"
+
+
+########### REMOVE MNTS 
+sudo rm -rf test_smb
+
+
+###########  Nvidia
+version = "575.64";
+sha256_64bit = "sha256-6wG8/nOwbH0ktgg8J+ZBT2l5VC8G5lYBQhtkzMCtaLE=";
+sha256_aarch64 = "sha256-uHj8fB1sSJfX0NWZEE1eZN1LQQkf7J0jPV3EeQCSG10=";
+openSha256 = "sha256-y93FdR5TZuurDlxc/p5D5+a7OH93qU4hwQqMXorcs/g=";
+settingsSha256 = "sha256-3BvryH7p0ioweNN4S8oLDCTSS47fQPWVYwNq4AuWQgQ=";
+persistencedSha256 = "sha256-QkDNQKwCsakZOLcSie1NBiFCM5e5NFGiIKtPSFeWdXs=";
+
+version = "575.64.03";
+sha256_64bit = "sha256-S7eqhgBLLtKZx9QwoGIsXJAyfOOspPbppTHUxB06DKA=";
+openSha256 = "sha256-PMh5efbSEq7iqEMBr2+VGQYkBG73TGUh6FuDHZhmwHk=";
+settingsSha256 = "sha256-ZpuVZybW6CFN/gz9rx+UJvQ715FZnAOYfHn5jt5Z2C8=";
+persistencedSha256 = "sha256-QkDNQKwCsakZOLcSie1NBiFCM5e5NFGiIKtPSFeWdXs=";
+
+############# NixOS
+nix-store --verify --check-contents
+sudo nixos-rebuild switch --show-trace --verbose
+systemctl --failed
+systemctl list-jobs
+
+
+# Update system Flatpaks
+if flatpak list --system | grep -q .; then
+    echo "Updating system Flatpaks..."
+    flatpak update --system -y
+fi
+
+# Update user Flatpaks
+if flatpak list --user | grep -q .; then
+    echo "Updating user Flatpaks..."
+    flatpak update --user -y
+fi

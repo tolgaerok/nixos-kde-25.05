@@ -1,0 +1,12 @@
+[Unit]
+Description=Restart user Flatpak Updater Timer after resume
+After=suspend.target hibernate.target sleep.target
+PartOf=suspend.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/restart-flatpak-timers.sh
+RemainAfterExit=true
+
+[Install]
+WantedBy=suspend.target hibernate.target sleep.target

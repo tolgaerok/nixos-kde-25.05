@@ -1,0 +1,6 @@
+[Unit]
+Description=Flatpak Update Failure Notification VER: 5.0
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/notify-send "❌ Flatpak Autoupdate Failed" "Please check your flatpak service logs." --app-name="Flatpak Fail" -i dialog-error -u CRITICAL

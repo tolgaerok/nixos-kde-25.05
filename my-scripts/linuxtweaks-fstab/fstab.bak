@@ -1,0 +1,26 @@
+
+#
+# /etc/fstab
+# Created by anaconda on Mon Apr 28 11:27:15 2025
+#
+# Accessible filesystems, by reference, are maintained under '/dev/disk/'.
+# See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info.
+#
+# After editing this file, run 'systemctl daemon-reload' to update systemd
+# units generated from this file.
+#
+UUID=d516e0e0-ffae-4da0-b0aa-fe93b0622b82 /                       btrfs   subvol=root,compress=zstd:1 0 0
+UUID=a3ce4382-f1b3-4325-b5c2-d811af52c84e /boot                   ext4    defaults        1 2
+UUID=5A51-0759                            /boot/efi               vfat    umask=0077,shortname=winnt 0 2
+UUID=d516e0e0-ffae-4da0-b0aa-fe93b0622b82 /home                   btrfs   subvol=home,compress=zstd:1 0 0
+
+
+# --------------------------  NETWORK SHARES ------------------------------------ #
+# Mounts on demand (after network is up)
+
+//192.168.0.1/tolga                        /mnt/Optus cifs credentials=/etc/samba/Windows_credentials.conf,vers=1.0,uid=1000,gid=1000,file_mode=0777,dir_mode=0777,iocharset=utf8,cache=loose,noserverino,actimeo=60,nofail,x-systemd.automount,_netdev 0 0
+//192.168.0.17/Public/RELATIONSHIPS        /mnt/Relationships cifs credentials=/etc/samba/QNAP_credentials.conf,vers=3.0,uid=1000,gid=1000,file_mode=0777,dir_mode=0777,iocharset=utf8,cache=loose,noserverino,actimeo=60,nofail,x-systemd.automount,_netdev 0 0
+//192.168.0.18/Documents                   /mnt/Mint cifs credentials=/etc/samba/Windows_credentials.conf,vers=3.0,uid=1000,gid=1000,file_mode=0777,dir_mode=0777,iocharset=utf8,cache=loose,noserverino,actimeo=60,nofail,x-systemd.automount,_netdev 0 0
+//192.168.0.20/tolga                       /mnt/DADS-W11  cifs  credentials=/etc/samba/Windows_credentials2.conf,vers=3.0,uid=1000,gid=1000,file_mode=0777,dir_mode=0777,iocharset=utf8,cache=loose,noserverino,actimeo=60,nofail,x-systemd.automount,_netdev  0 0
+//jack-sparrow.local/Public                /mnt/Public cifs credentials=/etc/samba/QNAP_credentials.conf,vers=3.0,uid=1000,gid=1000,file_mode=0777,dir_mode=0777,iocharset=utf8,cache=loose,noserverino,actimeo=60,nofail,x-systemd.automount,_netdev 0 0
+//jack-sparrow.local/Public/PC-PORTAL      /mnt/QNAP cifs credentials=/etc/samba/QNAP_credentials.conf,vers=3.0,uid=1000,gid=1000,file_mode=0777,dir_mode=0777,iocharset=utf8,cache=loose,noserverino,actimeo=60,nofail,x-systemd.automount,_netdev 0 0

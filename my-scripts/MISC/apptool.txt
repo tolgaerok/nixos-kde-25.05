@@ -1,0 +1,90 @@
+ wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+chmod +x appimagetool-x86_64.AppImage
+sudo mv appimagetool-x86_64.AppImage /usr/local/bin/appimagetool
+appimagetool
+mkdir -p AppDir/etc                                     # App-specific config (rare in AppImages)
+mkdir -p AppDir/tmp                                     # Runtime temp data (rare)
+mkdir -p AppDir/usr/bin                                 # Executables
+mkdir -p AppDir/usr/lib                                 # App-specific libraries (if not fully statically linked)
+mkdir -p AppDir/usr/share/applications                  # .desktop file
+mkdir -p AppDir/usr/share/doc                           # Optional docs or README
+mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps    # App icon
+mkdir -p AppDir/usr/share/locale                        # For translations if applicable
+
+appimagetool AppDir
+ARCH=x86_64 appimagetool AppDir
+./MPV_Tweak_2-x86_64.AppImage
+ls AppDir/usr/bin/
+chmod +x AppDir/usr/bin/mpv-tweak-2.sh
+
+
+
+ln -s usr/bin/YourApp AppDir/AppRun    # Symlink to main executable
+cp yourapp.desktop AppDir/usr/share/applications/
+cp youricon.png AppDir/usr/share/icons/hicolor/256x256/apps/
+
+
+#!/bin/bash
+set -e
+
+# ---------------------------
+# CONFIGURATION
+# ---------------------------
+APP_NAME="MPV_Tweak_2"
+ARCH="x86_64"
+APPDIR="AppDir"
+OUTPUT="${APP_NAME}-${ARCH}.AppImage"
+ICON_NAME="${APP_NAME}.png"
+DESKTOP_FILE="${APP_NAME}.desktop"
+EXECUTABLE="${APP_NAME}.sh"
+APPIMAGETOOL_URL="https://github.com/AppImage/AppImageKit/releases/latest/download/appimagetool-${ARCH}.AppImage"
+TOOLS_DIR="$HOME/.local/bin"
+APPIMAGETOOL="$TOOLS_DIR/appimagetool"
+# ---------------------------
+
+# Create required folders
+echo "📂 Creating directory structure..."
+mkdir -p "$APPDIR/usr/bin"
+mkdir -p "$APPDIR/usr/lib"
+mkdir -p "$APPDIR/usr/share/applications"
+mkdir -p "$APPDIR/usr/share/icons/hicolor/256x256/apps"
+
+# Create dummy executable
+cat > "$APPDIR/usr/bin/$APP_NAME" <<EOF
+#!/bin/bash
+echo "🎬 Welcome to $APP_NAME!"
+read -p 'Press Enter to exit...'
+EOF
+chmod +x "$APPDIR/usr/bin/$APP_NAME"
+
+# Create AppRun symlink
+ln -sf "usr/bin/$APP_NAME" "$APPDIR/AppRun"
+
+# Create .desktop file
+cat > "$APPDIR/$DESKTOP_FILE" <<EOF
+[Desktop Entry]
+Type=Application
+Name=$APP_NAME
+Exec=$APP_NAME
+Icon=$APP_NAME
+Categories=AudioVideo;Player;
+EOF
+cp "$APPDIR/$DESKTOP_FILE" "$APPDIR/usr/share/applications/"
+
+# Generate a dummy icon using ImageMagick
+echo "🖼 Creating icon..."
+convert -size 256x256 xc:darkslateblue -gravity Center -pointsize 20 -annotate 0 "$APP_NAME" "$APPDIR/usr/share/icons/hicolor/256x256/apps/$ICON_NAME"
+
+# Download appimagetool if not present
+mkdir -p "$TOOLS_DIR"
+if [ ! -x "$APPIMAGETOOL" ]; then
+  echo "📥 Downloading appimagetool..."
+  curl -Lo "$APPIMAGETOOL" "$APPIMAGETOOL_URL"
+  chmod +x "$APPIMAGETOOL"
+fi
+
+# Build AppImage
+echo "🛠 Building $OUTPUT..."
+ARCH=$ARCH "$APPIMAGETOOL" "$APPDIR" "$OUTPUT"
+
+echo "✅ Done: $(realpath "$OUTPUT")"

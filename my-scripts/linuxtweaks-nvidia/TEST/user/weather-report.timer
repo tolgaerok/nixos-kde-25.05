@@ -1,0 +1,10 @@
+[Unit]
+Description=☀️ 🌧️ 🌩️ Weather report
+
+[Timer]
+# OnCalendar=Mon..Fri 10:00
+OnCalendar=hourly
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=MPV Tweak 2
+Exec=AppRun
+Icon=mpv
+Terminal=false
+Categories=AudioVideo;Video;
+

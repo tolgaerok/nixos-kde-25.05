@@ -1,0 +1,64 @@
+# GitHub Monaspace Font
+DOWNLOAD_URL=$(curl --retry 3 https://api.github.com/repos/githubnext/monaspace/releases/latest | jq -r '.assets[] | select(.name| test(".*.zip$")).browser_download_url')
+curl --retry 3 -Lo /tmp/monaspace-font.zip "$DOWNLOAD_URL"
+
+unzip -qo /tmp/monaspace-font.zip -d /tmp/monaspace-font
+mkdir -p /usr/share/fonts/monaspace
+mv /tmp/monaspace-font/monaspace-v*/fonts/variable/* /usr/share/fonts/monaspace/
+rm -rf /tmp/monaspace-font*
+
+fc-cache -f /usr/share/fonts/monaspace
+fc-cache --system-only --really-force --verbose
+
+# ls-iommu helper tool for listing devices in iommu groups (PCI Passthrough)
+DOWNLOAD_URL=$(curl https://api.github.com/repos/HikariKnight/ls-iommu/releases/latest | jq -r '.assets[] | select(.name| test(".*x86_64.tar.gz$")).browser_download_url')
+curl --retry 3 -Lo /tmp/ls-iommu.tar.gz "$DOWNLOAD_URL"
+mkdir /tmp/ls-iommu
+tar --no-same-owner --no-same-permissions --no-overwrite-dir -xvzf /tmp/ls-iommu.tar.gz -C /tmp/ls-iommu
+mv /tmp/ls-iommu/ls-iommu /usr/bin/
+rm -rf /tmp/ls-iommu*
+
+{ lib, pkgs, config, ... }:
+
+{
+  environment.systemPackages = with pkgs; [
+    (pkgs.buildFHSUserEnvBubblewrap {
+      name = "linuxtweaks";
+      targetPkgs = pkgs: with pkgs; [
+        python311Full
+        opencv
+        ffmpeg
+        libGL
+        zlib
+        libxkbcommon
+        gtk3
+        qt5.qtbase
+        qt5.qtwayland
+        cairo
+        pango
+      ];
+      profile = ''
+        export QT_QPA_PLATFORM=wayland
+      '';
+      runScript = "bash";
+    })
+  ];
+}
+
+nix-shell linuxtweaks.nix
+# now inside:
+python3 your_app.py
+
+nix-shell -p \
+  "(python311.withPackages (ps: with ps; [ pygobject3 ]))" \
+  gtk3 gobject-introspection glib
+  
+nix-shell -p python311 python311Packages.pyqt6 python311Packages.pyqt6-sip
+
+
+
+sudo nix-channel --update nixos # If on NixOS
+sudo nix-channel --update nixpkgs # If using plain Nix
+nixos-rebuild switch --upgrade # If on NixOS
+
+sudo /etc/nm-resume-repair

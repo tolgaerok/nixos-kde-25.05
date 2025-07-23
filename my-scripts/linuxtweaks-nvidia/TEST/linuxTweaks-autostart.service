@@ -1,0 +1,24 @@
+[Service]
+Type=oneshot
+RemainAfterExit=true
+Restart=on-failure
+RestartSec=5
+
+# Enable LinuxTweaks services
+ExecStartPre=/bin/sh -c '/bin/systemctl enable linuxtweaks-cake-resume.service || true'
+ExecStartPre=/bin/sh -c '/bin/systemctl enable linuxtweaks-cake.service || true'
+ExecStartPre=/bin/sh -c '/bin/systemctl enable nmb.service || true'
+ExecStartPre=/bin/sh -c '/bin/systemctl enable ntp-check.service || true'
+ExecStartPre=/bin/sh -c '/bin/systemctl enable ntp-check.timer || true'
+ExecStartPre=/bin/sh -c '/bin/systemctl enable preload.service || true'
+ExecStartPre=/bin/sh -c '/bin/systemctl enable smb.service || true'
+ExecStartPre=/bin/sh -c '/bin/systemctl enable wsdd-sleep.service || true'
+ExecStartPre=/bin/sh -c '/bin/systemctl enable wsdd-starter.service || true'
+ExecStartPre=/bin/sh -c '/bin/systemctl enable wsdd.service || true'
+
+# Start LinuxTweaks services
+ExecStart=/bin/systemctl start smb.service nmb.service linuxtweaks-cake.service linuxtweaks-cake-resume.service ntp-check.service ntp-check.timer preload.service wsdd.service wsdd-sleep.service wsdd-starter.service
+
+[Install]
+WantedBy=multi-user.target
+

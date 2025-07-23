@@ -1,0 +1,11 @@
+[Unit]
+Description=Auto-enables NTP if disabled
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/timedatectl set-ntp true
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target

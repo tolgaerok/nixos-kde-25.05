@@ -1,0 +1,129 @@
+=============================
+Tolga's Flatpak Automatic Update and Notification
+Version: 2.0A
+=============================
+
+Description:
+=============================
+This service performs automatic maintenance tasks for Flatpak:
+1. Uninstalls unused Flatpak packages.
+2. Checks for Flatpak updates and installs them.
+3. Repairs Flatpak installations if needed.
+
+It also provides notifications for each step of the process, and displays a notification when the process is completed.
+
+Dependencies:
+- The service requires the network to be online.
+- It is triggered after the network is connected.
+
+Files:
+- `/usr/local/bin/LinuxTweaks/images/LinuxTweak.png` - Icon used in notifications.
+
+=============================
+Service Overview:
+=============================
+
+The systemd unit defines a "oneshot" service that performs the following tasks:
+1. current_userCheck for leftover Flatpak cruft (unused packages)current_user: 
+   - Executes `flatpak --system uninstall --unused`.
+2. current_userCheck for available Flatpak updatescurrent_user: 
+   - Executes `flatpak --system update`.
+3. current_userRepairs any broken Flatpak installationscurrent_user: 
+   - Executes `flatpak --system repair`.
+
+=============================
+Notifications:
+=============================
+
+Notifications will appear during each of the following stages:
+1. Checking for unused Flatpak packages.
+2. Checking for available updates.
+3. Repairing Flatpaks.
+4. Completing the update and repair process.
+
+=============================
+Logging:
+=============================
+The service logs to `journal` via `StandardOutput=journal` and `StandardError=journal`. Errors will be visible in the system logs.
+
+=============================
+How to Restart the Service:
+=============================
+
+If the service fails or you need to manually restart it, you can use the following commands:
+
+1. current_userRestart the service immediatelycurrent_user:
+      systemctl --user restart tolga-flatpak.service
+
+=============================
+View service status:
+============================= 
+
+This command shows the current status and error logs.
+
+    systemctl --user status tolga-flatpak.service --no-pager
+
+If the service fails, you can check logs using:
+
+    journalctl --user-unit=tolga-flatpak.service --since "1 hour ago"
+
+This will show any recent error messages and logs related to the service.
+
+If you want to reload the systemd configuration (e.g., after editing unit files):
+
+    systemctl --user daemon-reload
+
+If the service keeps failing, try enabling the service with this command:
+
+    systemctl --user enable --now tolga-flatpak.service
+
+To stop the service:
+
+    systemctl --user stop tolga-flatpak.service
+
+============================= 
+Error Handling:
+=============================
+
+Network Issues: If your system is not connected to the network, the service will fail to execute. Ensure your network is up before starting the service.
+
+ Flatpak Issues: If Flatpak commands fail (e.g., due to a broken installation), check your Flatpak setup with:
+
+    flatpak list
+    flatpak repair
+
+Missing Icon: If the icon used for notifications is missing, download it manually using the following command:
+
+    sudo wget -O /usr/local/bin/LinuxTweaks/images/LinuxTweak.png https://raw.githubusercontent.com/tolgaerok/linuxtweaks/main/MY_PYTHON_APP/images/LinuxTweak.png
+
+============================= 
+To Remove the Service:
+=============================
+
+If you no longer want to use the service, you can remove it with the following commands:
+
+Disable and stop the service:
+
+        systemctl --user disable --now tolga-flatpak.service
+
+Remove the systemd unit files:
+
+    rm -f $HOME/.config/systemd/user/tolga-flatpak.service
+    rm -f $HOME/.config/systemd/user/tolga.timer
+
+Remove the notification icon (optional):
+
+    sudo rm -f /usr/local/bin/LinuxTweaks/images/LinuxTweak.png
+
+============================= 
+For more information on Flatpak:
+=============================
+
+Refer to the official Flatpak documentation:
+
+    man flatpak
+
+Or visit:
+
+    https://flatpak.org/
+    https://github.com/flatpak/flatpak

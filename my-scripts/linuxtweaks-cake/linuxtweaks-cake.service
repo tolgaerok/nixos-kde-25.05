@@ -1,0 +1,31 @@
+[Unit]
+Description=Tolga's V8.0 CAKE qdisc at boot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c 'interface=$(ip link show \
+  | awk -F: '\''$0 ~ "wlp|wlo|wlx" && $0 !~ "NO-CARRIER" { gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2; exit }'\''); \
+if [ -n "$interface" ]; then \
+  /usr/sbin/tc qdisc replace dev "$interface" root cake \
+    bandwidth 1Gbit diffserv4 triple-isolate nonat nowash \
+    ack-filter split-gso rtt 10ms raw overhead 18; \
+fi'
+
+RemainAfterExit=yes
+
+Environment=SYSTEMD_SLEEP_FREEZE_USER_SESSIONS=0
+
+# Watchdog & safety
+TimeoutStartSec=10min
+TimeoutStopSec=10s
+TimeoutStopFailureMode=kill
+
+StandardError=journal
+StandardOutput=journal
+SuccessExitStatus=0 3
+
+[Install]
+WantedBy=multi-user.target
+

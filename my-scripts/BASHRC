@@ -1,0 +1,94 @@
+alias exe='echo "🔍 Scanning for script files in: $(pwd)" && \
+find . -type f \( -name "*.sh" -o -name "*.bash" -o -name "*.service" -o -name "*.timer" -o -name "*.conf" -o -name "*.nix" -o -name "*.txt" \) -print0 | \
+while IFS= read -r -d "" file; do
+  echo "⚙️  Making executable: $file"
+  chmod +x "$file"
+done'
+
+
+alias lt="{
+  echo '🔧 Enabling USER services/timers...';
+  systemctl --user list-unit-files | grep -Ei 'linuxtweaks?|LinuxTweaks?' | awk '{print \$1}' | while read -r unit; do
+    echo \"→ Enabling user unit: \$unit\";
+    systemctl --user enable --now \"\$unit\";
+  done;
+  echo '🔧 Enabling SYSTEM services/timers...';
+  systemctl list-unit-files | grep -Ei 'linuxtweaks?|LinuxTweaks?' | awk '{print \$1}' | while read -r unit; do
+    echo \"→ Enabling system unit: \$unit\";
+    sudo systemctl enable --now \"\$unit\";
+  done;
+  echo '✅ Done.';
+}"
+
+
+#--- YAD Helper Function ---#
+fancy() {
+  yad --center --width=400 --height=120 --window-icon=dialog-information --borders=10 \
+    --title="LinuxTweaks NVIDIA Installer" --text="$1" --button=gtk-ok:0 --no-buttons &
+  YAD_PID=$!
+  bash -c "$2"
+  kill $YAD_PID
+}
+
+# --- Service Status Check ---
+status() {
+  echo -e "\n\033[1;36m🔍 Checking NVIDIA-related systemd services...\033[0m\n"
+  printf "%-30s %-15s %-20s\n" "Service" "Enabled" "Active State"
+  printf "%-30s %-15s %-20s\n" "-------" "-------" "-------------"
+
+  for service in nvidia-persistenced nvidia-suspend nvidia-resume nvidia-hibernate; do
+    # Enabled check
+    if systemctl is-enabled --quiet "$service"; then
+      enabled="\033[1;32menabled 🟢\033[0m"
+    else
+      enabled="\033[1;33mdisabled 🟡\033[0m"
+    fi
+
+    # check with oneshot
+    if systemctl is-active --quiet "$service"; then
+      active="\033[1;32mactive 🟢\033[0m"
+    else
+      type=$(systemctl show -p Type --value "$service")
+      if [[ "$type" == "oneshot" ]]; then
+        active="\033[1;34moneshot (idle) 📌\033[0m"
+      else
+        active="\033[1;31minactive ❌\033[0m"
+      fi
+    fi
+
+    # result
+    printf "%-30s %-15b %-20b\n" "$service" "$enabled" "$active"
+  done
+
+  echo -e "\n\033[0;36m📌 Note for myself: 'oneshot (idle)' means the service runs only during suspend/resume/hibernate events....\033[0m\n"
+}
+
+# Created by `pipx` on 2025-06-27 02:13:53
+# export PATH="$PATH:/home/tolga/.local/bin"
+
+alias cl="clear"
+
+alias scloud='f() { scdl -l "https://soundcloud.com/$1"; }; f'
+
+# ┌───────────    konsole related    ───────────┐
+
+PS1="\[\e[1;m\]┌(\[\e[1;32m\]\u\[\e[1;34m\]@\h\[\e[1;m\]) \[\e[1;m\]➤\[\e[1;36m\] \W \[\e[1;m\] \n\[\e[1;m\]└\[\e[1;33m\]➤\[\e[0;m\]  "
+
+# └─────────────────────────────────────────────┘
+
+cl && echo  && fortune  | lolcat && echo
+
+alias kplasma="pkill -9 plasmashell"
+
+alias nixos-backup='
+  rsync -a --delete \
+    --exclude "samba/mnt/qnap-secrets" \
+    --exclude "samba/mnt/router-secrets" \
+    /etc/nixos/ /home/tolga/Documents/MEGA/Documents/LINUX/NixOS/GTX1650/ && \
+  echo "🔄 Rsync complete…" && \
+  chmod -R +x /home/tolga/Documents/MEGA/Documents/LINUX/NixOS/GTX1650/ && \
+  echo "✅ Backup ready. All files made executable in desto folder"
+'
+
+alias qnap="ssh admin@192.168.0.17"
+alias qnap-refresh='systemctl daemon-reload && systemctl restart mnt-SSH_QNAP.mount && systemctl status mnt-SSH_QNAP.mount --no-pager'

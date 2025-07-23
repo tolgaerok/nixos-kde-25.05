@@ -1,0 +1,49 @@
+alias nv-yad='cd "/home/tolga/Documents/MEGA/Documents/LINUX/fedora/RPM-BIILD/rpmbuild/SCRIPTS/YAD scripts/" && clear && sudo ./yad-nvidia.sh'
+alias po-yad='cd "/home/tolga/Documents/MEGA/Documents/LINUX/fedora/RPM-BIILD/rpmbuild/SCRIPTS/YAD scripts/" && clear && sudo ./yad-post.sh'
+btrfs_manage() {
+    clear
+    echo ""
+    echo "###---------- BTRFS TOOLS ----------######"
+    echo "Choose an operation:"
+    echo "1) Balance /home"
+    echo "2) Balance /"
+    echo "3) Scrub /home"
+    echo "4) Scrub /"
+    echo "5) Exit"
+    read -p "Enter your choice [1-5]: " choice
+
+    case $choice in
+    1)
+        echo "Starting balance on /home..."
+        sudo btrfs balance start /home && sudo btrfs balance status /home
+        ;;
+    2)
+        echo "Starting balance on /..."
+        sudo btrfs balance start / && sudo btrfs balance status /
+        ;;
+    3)
+        echo "Starting scrub on /home..."
+        sudo btrfs scrub start /home && sudo btrfs scrub status /home
+        ;;
+    4)
+        echo "Starting scrub on /..."
+        sudo btrfs scrub start / && sudo btrfs scrub status /
+        ;;
+    5)
+        echo "Exiting."
+        return 0
+        ;;
+    *)
+        echo "Invalid option. Please choose a number between 1 and 5."
+        ;;
+    esac
+}
+
+alias btrfs-manage="btrfs_manage"
+
+alias scrub="echo -e \"🔍 Running Btrfs Maintenance...\" && \
+sudo btrfs scrub start -B / && echo -e \"✅ Scrub completed!\" && \
+sudo btrfs balance start -v / && echo -e \"✅ Balance completed!\" && \
+sudo fstrim -av && echo -e \"🚀 Trim completed\\!\""
+
+alias check="systemctl status cake.service wsdd.service wsdd-sleep.service --no-pager"

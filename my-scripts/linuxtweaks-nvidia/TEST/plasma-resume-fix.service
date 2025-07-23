@@ -1,0 +1,14 @@
+[Unit]
+Description=Restart Plasma Shell after Resume
+# Dependencies ensure the service runs after the display manager and graphical environment are more stable.
+After=sddm.service graphical.target multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sleep 5
+ExecStartPost=/usr/local/bin/plasma-restart.sh
+User=root
+RemainAfterExit=yes
+
+[Install]
+WantedBy=graphical.target multi-user.target
