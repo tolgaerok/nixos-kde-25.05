@@ -1,4 +1,8 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
+
+# ----------------------------------------------------
+# My over the top flatpak snippet
+# ----------------------------------------------------
 
 let
   flatpakApps = [
@@ -47,6 +51,7 @@ let
     "runtime/org.gtk.Gtk3theme.adw-gtk3-dark"
   ];
 in {
+
   services.flatpak.enable = true;
 
   environment.etc."flatpak-repo".text = ''
@@ -54,16 +59,7 @@ in {
     url=https://flathub.org/repo/flathub.flatpakrepo
   '';
 
-  # systemd.services.flatpak-repo = {
-  #   enable = true;
-  #   wantedBy = [ "multi-user.target" ];
-  #   path = [ pkgs.flatpak ];
-  #   script = ''
-  #     echo -e "\033[1;34m[Flatpak]\033[0m Adding Flathub repo..."
-  #     flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-  #   '';
-  # };
-
+  # flatpak repo
   systemd.services.flatpak-repo = {
     enable = true;
     wantedBy = [ "multi-user.target" ];
@@ -75,6 +71,57 @@ in {
     serviceConfig = {
       Type = "oneshot"; # runs script then exits
       RemainAfterExit = true; # keep as active after script finishes
+    };
+  };
+
+  # flatpak update service
+  systemd.services.flatpak-update = {
+    enable = true;
+    # wantedBy = [ "multi-user.target" ];      # bombs out on rebuilds as theres no network
+
+    path = [ pkgs.flatpak ];
+    script = ''
+      LOGFILE="/var/log/flatpak-update.log"
+      echo -e "\n🔁 $(date) - Brother, flatpak update triggered" >> "$LOGFILE"
+
+      i=0
+      while [ $i -lt 5 ]; do
+        if ping -c1 flathub.org >/dev/null 2>&1; then break; fi
+        echo "[Flatpak] Fucking Network not ready, retrying in 5s..." >> "$LOGFILE"
+        sleep 5
+        i=$((i+1))
+      done
+
+      if [ $i -eq 5 ]; then
+        echo "[Flatpak] ❌ Network unreachable. Aborting... fuck knows brother" >> "$LOGFILE"
+        exit 1
+      fi
+
+      flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo >> "$LOGFILE" 2>&1
+
+      echo -e "[Flatpak] Installing or updating..." >> "$LOGFILE"
+      ${lib.concatStringsSep "\n" (map (app:
+        ''
+          flatpak install -y --noninteractive --system --or-update flathub ${app} >> "$LOGFILE" 2>&1'')
+        flatpakApps)}
+
+      echo "✅ Done at $(date)" >> "$LOGFILE"
+    '';
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      After = [ "network-online.target" ];
+      Wants = [ "network-online.target" ];
+    };
+  };
+
+  # timer for the Flatpak update service
+  systemd.timers.flatpak-update = {
+    enable = true;
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnBootSec = "10min";
+      OnUnitActiveSec = "1d";
     };
   };
 

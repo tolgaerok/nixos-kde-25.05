@@ -37,7 +37,7 @@
 
 let
   G4 = builtins.filterSource (p: t: true) ./my-scripts;
-  MyFlatpaks = false; # set false to skip or true to include!
+  MyFlatpaks = true; # set false to skip or true to include!
   fontsModule = import ./fonts/default.nix { inherit pkgs; };
   host = "G4800-NIXOS";
 

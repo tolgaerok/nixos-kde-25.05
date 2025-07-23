@@ -92,7 +92,7 @@ in {
   # boot.kernelParams = [ "mem_sleep_default=s2idle" ];
 
   # 🧼 Avoid startup wait
-  systemd.services."NetworkManager-wait-online".enable = lib.mkForce true;
+  systemd.services."NetworkManager-wait-online".enable = lib.mkForce false;
 }
 
 # sudo nixos-rebuild switch
