@@ -244,3 +244,5 @@ alias optus="nmcli connection add type wifi \
   sudo /etc/nm-resume-repair"
 
 clear && echo && fortune | sed "s/^/    /" | lolcat && echo
+
+alias gitup="$HOME/gitup2.sh"
