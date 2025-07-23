@@ -12,7 +12,7 @@
 # modinfo nvidia
 
 # Show active NVIDIA driver parameter values
-# ───────────────────────────────────────────
+# ───────────────────────────────────────────-
 # cat /proc/driver/nvidia/params
 
 with lib;
