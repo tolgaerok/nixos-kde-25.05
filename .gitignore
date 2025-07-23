@@ -1,5 +1,8 @@
+samba/mnt/qnap-secrets
+samba/mnt/router-secrets
 NOTES/
-samba/mnt/
-nvidia/z_*
+nvidia/z_NOTES.txt
+nvidia/z_MASTER_BAKUP.nix
 my-scripts/
 python/fhs.nix
+fonts/default copy.nix
