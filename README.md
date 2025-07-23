@@ -4,6 +4,8 @@
 ### My personal NixOs 25.05 config
 #
 
+![Desktop](screenshots/desktop.png)
+
 ```bash
 # Tolga Erok
 # 22/7/2025
