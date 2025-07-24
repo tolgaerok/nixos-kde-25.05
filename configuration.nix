@@ -167,9 +167,9 @@ in {
   # Security
   # ----------------------------------------------------------------------------
   security = {
-    rtkit.enable = true;
+    allowSimultaneousMultithreading = true;
     pam.services.sddm.enableKwallet = true;
-
+    rtkit.enable = true;
   };
 
   # ----------------------------------------------------------------------------

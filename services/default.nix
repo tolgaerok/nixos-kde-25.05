@@ -25,6 +25,7 @@
     envfs.enable = true;
     flatpak.enable = true;
     fstrim.enable = true;
+    fwupd.enable = true;
     openssh.enable = true;
     printing.enable = true;
     pulseaudio.enable = false;

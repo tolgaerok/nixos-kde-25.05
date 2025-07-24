@@ -58,7 +58,8 @@ let
     export XDG_RUNTIME_DIR="/run/user/$USER_ID"
 
     if command -v notify-send >/dev/null 2>&1; then
-      runuser -u "$USER_NAME" -- env DISPLAY=$DISPLAY XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR notify-send "Wi-Fi" "NetworkManager resume hook ran"
+      runuser -u "$USER_NAME" -- env DISPLAY=$DISPLAY XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR notify-send "WiFi Restarting.." "✅  wifi is ready!" --app-name="💻  HOOK has run" -i /etc/nixos/flatpaks/LinuxTweak.png -u NORMAL
+      
     fi
   '';
 in {
@@ -78,8 +79,7 @@ in {
 
   # 🔁 Service to run after resume
   systemd.services.networkmanager-resume = {
-    description =
-      "Reload Wi-Fi driver and restart NetworkManager after suspend-resume";
+    description = "Reload Wi-Fi driver and restart NetworkManager after suspend-resume";
     after = [ "suspend.target" "hibernate.target" "hybrid-sleep.target" ];
     wantedBy = [ "resume.target" ];
     serviceConfig = {

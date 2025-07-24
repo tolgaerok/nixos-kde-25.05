@@ -1,20 +1,16 @@
 #!/run/current-system/sw/bin/bash
 export PATH=/run/current-system/sw/bin:$PATH
 
+icon="/etc/nixos/flatpaks/LinuxTweak.png"
 
-/run/current-system/sw/bin/notify-send "" "🌐 ☀️ Checking for flatpak cruft" --app-name="🔧  Flatpak Maintenance" -i /etc/nixos/flatpaks/LinuxTweak.png -u NORMAL
-/run/current-system/sw/bin/flatpak --system uninstall --unused -y --noninteractive
+log() {
+    printf "\e[34m[INFO] %s\e[0m\n" "$1"
+}
 
-sleep 5
-
-/run/current-system/sw/bin/notify-send "" "📡  Checking for flatpak UPDATES" --app-name="📡  Flatpak Updater" -i /etc/nixos/flatpaks/LinuxTweak.png -u NORMAL
-/run/current-system/sw/bin/flatpak update -y --noninteractive
-
-sleep 5
-
-/run/current-system/sw/bin/notify-send "" "💻  Checking and repairing Flatpaks" --app-name="🔧  Flatpak Repair Service" -i /etc/nixos/flatpaks/LinuxTweak.png -u NORMAL
-/run/current-system/sw/bin/flatpak repair
+notify() {
+    /run/current-system/sw/bin/notify-send "$1" "$2" --app-name="$3" -i "$icon" -u NORMAL
+}
 
 sleep 5
-
-/run/current-system/sw/bin/notify-send "Flatpaks checked, fixed and updated" "✅  Your computer is ready!" --app-name="💻  Flatpak Update Service" -i /etc/nixos/flatpaks/LinuxTweak.png -u NORMAL
+log "✅ All Flatpak maintenance tasks completed."
+notify "I love pussy" "✅  My cock is pussy ready!" "💻  COCK Update Service"
