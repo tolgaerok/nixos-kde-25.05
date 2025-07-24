@@ -23,8 +23,8 @@
         "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus"
         "XDG_RUNTIME_DIR=/run/user/1000"
       ];
-      #ExecStart = "/etc/nixos/flatpaks/linuxtweaks-flatpak-update.sh";
-      ExecStart = "/etc/nixos/flatpaks/test.sh";
+      ExecStart = "/etc/nixos/flatpaks/linuxtweaks-flatpak-update-copy.sh"; 
+      # ExecStart = "/etc/nixos/flatpaks/test.sh";
       TimeoutStopFailureMode = "abort";
       StandardOutput = "journal+console";
       StandardError = "journal+console";

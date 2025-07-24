@@ -1,5 +1,10 @@
 #!/run/current-system/sw/bin/bash
 export PATH=/run/current-system/sw/bin:$PATH
+
+DISPLAY=:0
+DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus
+XDG_RUNTIME_DIR=/run/user/1000
+real_user=${username}
 sleep 10
 
 ICON="/etc/nixos/flatpaks/LinuxTweak.png"
@@ -37,6 +42,6 @@ sleep 2
 log "🚀 Starting Flatpak maintenance..."
 run_step "🌐 Removing unused Flatpaks..." "flatpak --system uninstall --unused -y --noninteractive"
 run_step "📡 Updating system Flatpaks..." "flatpak update -y --noninteractive --system"
-run_step "🧰 Repairing Flatpaks..." "flatpak repair --system"
+# run_step "🧰 Repairing Flatpaks..." "flatpak repair --system"
 log "🎉 All maintenance tasks complete."
 wait $YAD_PID

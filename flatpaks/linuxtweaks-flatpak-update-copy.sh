@@ -1,5 +1,6 @@
 #!/run/current-system/sw/bin/bash
 export PATH=/run/current-system/sw/bin:$PATH
+sleep 10
 
 icon="/etc/nixos/flatpaks/LinuxTweak.png"
 
@@ -25,9 +26,9 @@ flatpak update -y --noninteractive --system | tee /tmp/flatpak-update.log
 
 sleep 3
 
-log "💻 Running flatpak system repair..."
-notify "" "💻  Checking and repairing Flatpaks" "🔧  Flatpak Repair Service"
-flatpak repair --system | tee /tmp/flatpak-repair.log
+#log "💻 Running flatpak system repair..."
+#notify "" "💻  Checking and repairing Flatpaks" "🔧  Flatpak Repair Service"
+#flatpak repair --system | tee /tmp/flatpak-repair.log
 
 sleep 3
 
