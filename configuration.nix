@@ -37,7 +37,7 @@
 
 let
   G4 = builtins.filterSource (p: t: true) ./my-scripts;
-  MyFlatpaks = true; # set false to skip or true to include!
+  MyFlatpaks = false; # set false to skip or true to include!
   fontsModule = import ./fonts/default.nix { inherit pkgs; };
   host = "G4800-NIXOS";
 
@@ -99,10 +99,15 @@ in {
     ./python/linuxtweaks-shell.nix
     ./vm
 
+    # --------------------------------------------------
+    # Work arounds
+    # --------------------------------------------------
+    ./refresh-plasma-bug
+    ./flatpaks/update-flatpaks-service.nix
     #./core
     #./local-networking
     #./program-settings
-    #./refresh-plasma-bug
+
     #./scripts
     #./security
     #./services

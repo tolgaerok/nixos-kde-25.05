@@ -52,6 +52,11 @@ let
   ];
 in {
 
+  imports = [
+    ./update-flatpaks-service.nix
+
+  ];
+
   services.flatpak.enable = true;
 
   environment.etc."flatpak-repo".text = ''
