@@ -50,6 +50,10 @@
 
 }
 
+# system
 # cl && systemctl --no-pager status linuxtweaks-flatpak-auto-update.service linuxtweaks-flatpak.timer && systemctl is-active linuxtweaks-flatpak-auto-update.service linuxtweaks-flatpak.timer
+
+#user
+# cl && systemctl --user --no-pager status linuxtweaks-flatpak-auto-update.service linuxtweaks-flatpak.timer && systemctl --user is-active linuxtweaks-flatpak-auto-update.service linuxtweaks-flatpak.timer
 # sudo systemctl reset-failed && sudo systemctl daemon-reexec && sudo systemctl daemon-reload
 
