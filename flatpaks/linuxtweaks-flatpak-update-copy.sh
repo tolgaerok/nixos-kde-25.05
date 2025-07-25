@@ -13,18 +13,18 @@ log() {
     printf "\e[34m[INFO] %s\e[0m\n" "$1"
 }
 
-#notify() {
-#    /run/current-system/sw/bin/notify-send "$1" "$2" --app-name="$3" -i "$icon" -u NORMAL
-#}
-
 notify() {
-    /run/current-system/sw/bin/notify-send \
-      "$1" "$2" \
-      --app-name="$3" \
-      --icon="$icon" \
-      --urgency=normal \
-      --expire-time=5000
+    /run/current-system/sw/bin/notify-send "$1" "$2" --app-name="$3" -i "$icon" -u NORMAL
 }
+
+#notify() {
+#    /run/current-system/sw/bin/notify-send \
+#      "$1" "$2" \
+#      --app-name="$3" \
+#      --icon="$icon" \
+#      --urgency=normal \
+#      --expire-time=5000
+#}
 
 sleep 5
 

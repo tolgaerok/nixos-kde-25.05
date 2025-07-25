@@ -38,7 +38,7 @@
           Type = "oneshot";
           RemainAfterExit = false;
           ExecStart =
-            "${pkgs.systemd}/bin/loginctl terminate-user tolga || true";
+            "${pkgs.systemd}/bin/loginctl terminate-user ${username} || true";
           TimeoutStopSec = "3s";
         };
       };

@@ -1,0 +1,23 @@
+systemd.services.linuxtweaks-flatpak-auto-update = {
+    description = "🛠️ Auto-maintain and update Flatpaks after resume";
+    after = [
+      "suspend.target"
+      "sleep.target"
+
+    ];
+    wantedBy = [ "resume.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      User = username;
+      Environment = [
+        "DISPLAY=:0"
+        "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus"
+        "XDG_RUNTIME_DIR=/run/user/1000"
+      ];
+      ExecStart = "/etc/nixos/flatpaks/linuxtweaks-flatpak-update-copy.sh"; 
+      # ExecStart = "/etc/nixos/flatpaks/test.sh";
+      TimeoutStopFailureMode = "abort";
+      StandardOutput = "journal+console";
+      StandardError = "journal+console";
+    };
+  };

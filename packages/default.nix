@@ -92,7 +92,8 @@ in {
     video-trimmer
 
     # Graphics
-    gimp-with-plugins
+    gimp3-with-plugins
+    
 
     # Backup tools
     borgbackup

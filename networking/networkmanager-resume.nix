@@ -39,12 +39,12 @@ let
     fi
 
     # echo ""
-    echo "  [✳️] Reloading Wi-Fi driver: $DRIVER"
+    echo "  [✳️ ] Reloading Wi-Fi driver: $DRIVER"
     modprobe -r "$DRIVER" || true
     sleep 2
     modprobe "$DRIVER" || true
 
-    echo "  [✳️] Restarting NetworkManager"
+    echo "  [✳️ ] Restarting NetworkManager"
     systemctl restart NetworkManager || true
 
     echo "  [✓] Network resume fix complete, brother"
@@ -72,21 +72,21 @@ in {
   environment.etc."nm-resume-repair".source = resumeScript;
 
   # ✳️ Ensure resume.target is active and part of systemd dependency graph
-  systemd.targets.resume = {
-    description = "Resume from suspend/hibernate";
-    wantedBy = [ "multi-user.target" ];
-  };
+  #systemd.targets.resume = {
+  #  description = "Resume from suspend/hibernate";
+  #  wantedBy = [ "multi-user.target" ];
+  #};
 
   # 🔁 Service to run after resume
-  systemd.services.networkmanager-resume = {
-    description = "Reload Wi-Fi driver and restart NetworkManager after suspend-resume";
-    after = [ "suspend.target" "hibernate.target" "hybrid-sleep.target" ];
-    wantedBy = [ "resume.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      ExecStart = "/etc/nm-resume-repair";
-    };
-  };
+  #systemd.services.networkmanager-resume = {
+  #  description = "Reload Wi-Fi driver and restart NetworkManager after suspend-resume";
+  #  after = [ "suspend.target" "hibernate.target" "hybrid-sleep.target" ];
+  #  wantedBy = [ "resume.target" ];
+  #  serviceConfig = {
+  #    Type = "oneshot";
+  #    ExecStart = "/etc/nm-resume-repair";
+  #  };
+  #};
 
   # ⚡ Optional: faster laptop resume
   # boot.kernelParams = [ "mem_sleep_default=s2idle" ];
