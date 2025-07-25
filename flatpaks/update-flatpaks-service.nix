@@ -6,13 +6,35 @@
 #    Tolga Erok
 # ---------------------------------------------------
 {
-  # User-level Flatpak update service
+  # user-level Flatpak update service
   systemd.user.services.linuxtweaks-flatpak-auto-update = {
     description = "🛠️ Tolga's User Flatpak Auto Update";
     serviceConfig = {
       Type = "oneshot";
       ExecStart = "/etc/nixos/flatpaks/linuxtweaks-flatpak-update-copy.sh";
     };
+  };
+
+  # user-level timer service
+  systemd.user.timers.linuxtweaks-flatpak = {
+    description =
+      "⏱️ Run LinuxTweaks Flatpak Update every 10 sec's for testing purposes";
+    wantedBy = [ "default.target" "timers.target" ];
+    timerConfig = {
+      # OnBootSec = "1min";
+      # OnUnitActiveSec = "6h";
+      # OnUnitInactiveSec = "1h";
+      # RandomizedDelaySec = "0";
+      # RandomizedDelaySec = "5min";
+      # WakeSystem = true;
+      AccuracySec = "1s";
+      OnBootSec = "5s";
+      OnUnitActiveSec = "10s";
+      OnUnitInactiveSec = "1min";
+      Persistent = true;
+      Unit = "linuxtweaks-flatpak-auto-update.service";
+    };
+    #unitConfig = { ConditionACPower = true; };
   };
 
   #systemd.services.linuxtweaks-flatpak-resume = {
@@ -25,28 +47,6 @@
   #      "/run/current-system/sw/bin/systemctl start linuxtweaks-flatpak-auto-update.service";
   #  };
   #};
-
-  # Timer targeting the user-level service
-  systemd.user.timers.linuxtweaks-flatpak = {
-    description =
-      "⏱️ Run LinuxTweaks Flatpak Update every 10 sec's for testing purposes";
-    wantedBy = [ "default.target" "timers.target" ];
-    timerConfig = {
-      # OnBootSec = "1min";
-      # OnUnitActiveSec = "6h";
-      # OnUnitInactiveSec = "1h";
-      # RandomizedDelaySec = "0";
-      # RandomizedDelaySec = "5min";
-      # WakeSystem = true;
-      AccuracySec = "1s"; 
-      OnBootSec = "5s";
-      OnUnitActiveSec = "10s";
-      OnUnitInactiveSec = "1min";
-      Persistent = true;
-      Unit = "linuxtweaks-flatpak-auto-update.service";
-    };
-    #unitConfig = { ConditionACPower = true; };
-  };
 
 }
 
