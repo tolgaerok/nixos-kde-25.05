@@ -102,7 +102,7 @@ in {
     # --------------------------------------------------
     # Work arounds
     # --------------------------------------------------
-    # ./refresh-plasma-bug
+    ./refresh-plasma-bug
     ./flatpaks/update-flatpaks-service.nix
     #./core
     #./local-networking

@@ -17,8 +17,7 @@
 
   # user-level timer service
   systemd.user.timers.linuxtweaks-flatpak = {
-    description =
-      "⏱️ Run LinuxTweaks Flatpak Update every 10 sec's for testing purposes";
+    description = "⏱️ Run LinuxTweaks Flatpak Update every 30mins";
     wantedBy = [ "default.target" "timers.target" ];
     timerConfig = {
       # OnBootSec = "1min";
@@ -28,13 +27,14 @@
       # RandomizedDelaySec = "5min";
       # WakeSystem = true;
       AccuracySec = "1s";
-      OnBootSec = "5s";
-      OnUnitActiveSec = "10s";
-      OnUnitInactiveSec = "1min";
-      Persistent = true;
+      OnBootSec = "5s";                # Run after 5 minutes post-boot
+      OnUnitActiveSec = "30min";       # interval: every 30 minutes
+      OnUnitInactiveSec = "1min";      # Catches up if system was off
+      Persistent = true;               # run missed updates after boo
       Unit = "linuxtweaks-flatpak-auto-update.service";
     };
-    #unitConfig = { ConditionACPower = true; };
+    # Leave this commented out — it's laptop-only
+    # unitConfig = { ConditionACPower = true; };
   };
 
   #systemd.services.linuxtweaks-flatpak-resume = {
